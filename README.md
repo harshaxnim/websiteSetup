@@ -12,3 +12,4 @@ This project will let you quickly setup Flask websites over nginX with UWSGI as 
 * If you want to remove the site you just created, run `cleanUp.sh`.
 ## ToDo
 * SSL Support
+* Improved error handling perhaps
