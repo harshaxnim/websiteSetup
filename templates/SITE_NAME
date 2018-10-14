@@ -1,0 +1,13 @@
+server {
+    listen 80;
+    server_name ${SITE_URLS};
+
+    location / {
+        include uwsgi_params;
+        uwsgi_pass unix:${SITE_ROOT}/wsgi.sock;
+    }
+
+    access_log ${SITE_ROOT}/logs/access.log;
+    error_log ${SITE_ROOT}/logs/error.log;
+
+}
