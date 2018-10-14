@@ -10,3 +10,5 @@ This project will let you quickly setup Flask websites over nginX with UWSGI as 
 * Configure the `config.sh` as required. Make sure they're not left blank, error handling isn't robust yet. (XXX)
 * Run `runThis.sh`.
 * If you want to remove the site you just created, run `cleanUp.sh`.
+## ToDo
+* SSL Support
