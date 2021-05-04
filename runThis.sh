@@ -15,6 +15,7 @@ if [ -d "$SITE_ROOT" ]; then
 fi
 mkdir $SITE_ROOT
 mkdir $SITE_ROOT/logs
+mkdir $SITE_ROOT/templates
 
 # create venv and install flask and wsgi
 virtualenv $SITE_ROOT/venv
@@ -38,6 +39,11 @@ supercopy templates/wsgi.ini $SITE_ROOT/wsgi.ini
 supercopy templates/SITE_NAME.service $SITE_ROOT/$SITE_NAME.service
 ## nginX config
 supercopy templates/SITE_NAME $SITE_ROOT/$SITE_NAME
+## index template
+supercopy templates/index.html $SITE_ROOT/templates/index.html
+## easy restart script
+supercopy templates/restart.sh $SITE_ROOT/restart.sh
+chmod +x $SITE_ROOT/restart.sh
 
 echo -e '\n\nCopying service template... (symlinks are disabled because disabling the service involves deleting symlinks and cannot determinte how far it should be followed)'
 # copy service file
@@ -54,3 +60,6 @@ echo -e '\n\nLinking nginX configs, testing and restarting nginX...'
 sudo ln -s $SITE_ROOT/$SITE_NAME /etc/nginx/sites-available/$SITE_NAME
 sudo ln -s /etc/nginx/sites-available/$SITE_NAME /etc/nginx/sites-enabled
 sudo nginx -t && sudo systemctl restart nginx
+
+echo ----
+echo $SITE_NAME is all setup up! Visit now at $SITE_URLS
