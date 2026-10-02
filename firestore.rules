@@ -11,7 +11,7 @@ service cloud.firestore {
         && data.status in ['planning', 'development', 'live', 'paused', 'archived']
         && data.url is string && data.url.size() <= 2048 && data.url.matches('https://[^/@]+[^@]*')
         && data.repositoryUrl == 'https://github.com/' + data.repository
-        && data.template == 'harshaxnim/websiteSetup'
+        && data.template in ['harshaxnim/OneAppToRuleThemAll', 'harshaxnim/websiteSetup']
         && (!data.keys().hasAny(['themeColor']) || (data.themeColor is string && data.themeColor.matches('#[A-Fa-f0-9]{6}')))
         && (!data.keys().hasAny(['iconUrl']) || (data.iconUrl is string && data.iconUrl.size() <= 2048 && (data.iconUrl == '' || data.iconUrl.matches('https://[^/@]+[^@]*'))))
         && data.createdAt is timestamp && data.updatedAt == request.time;

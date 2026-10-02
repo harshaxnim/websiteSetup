@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { resolveAppInfo, validateAppRecord } from '../lib/app-info.js';
+import { resolveAppInfo, validateAppRecord, isTemplateRepository } from '../lib/app-info.js';
 
 test('repository metadata resolves zero-config app identity and links', () => {
   const info = resolveAppInfo({ repository: 'harshaxnim/research-tool', hostname: 'harshaxnim.github.io', pathname: '/research-tool/' });
@@ -11,6 +11,11 @@ test('repository metadata resolves zero-config app identity and links', () => {
   assert.equal(info.iconUrl, 'https://harshaxnim.github.io/research-tool/icon.svg');
   assert.equal(info.themeColor, '#b97053');
   assert.equal(validateAppRecord(info), info);
+  assert.equal(validateAppRecord({ ...info, template: 'harshaxnim/websiteSetup' }).template, 'harshaxnim/websiteSetup');
+  for (const repository of ['harshaxnim/OneAppToRuleThemAll', 'harshaxnim/websiteSetup']) {
+    assert.equal(isTemplateRepository(repository), true);
+    assert.equal(resolveAppInfo({ repository }).name, 'OneAppToRuleThemAll');
+  }
 });
 test('explicit identity and presentation override defaults', () => {
   const info = resolveAppInfo({ repository: 'harshaxnim/new-name', override: 'stable-id', details: { name: 'Notes', description: 'My notes', status: 'planning' } });

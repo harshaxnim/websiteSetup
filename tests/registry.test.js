@@ -21,6 +21,10 @@ test('directory is publicly readable and records have the authenticated creator 
   assert.equal(rows[0].id, 'videos');
   assert.equal(rows[0].ownerUid, 'alice');
   await assertSucceeds(getDoc(doc(db(null), 'appDirectory/videos')));
+  // Apps generated before the repository rename can still register and edit.
+  const legacy = { ...resolveAppInfo({ repository: 'harshaxnim/legacy-notes' }), template: 'harshaxnim/websiteSetup' };
+  await assertSucceeds(registry('alice').registerApp(legacy));
+  await assertSucceeds(registry('alice').setStatus('legacy-notes', 'paused'));
 });
 test('registration is idempotent and preserves owner-edited name and status', async () => {
   const r = registry('alice');

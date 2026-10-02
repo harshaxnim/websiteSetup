@@ -27,13 +27,15 @@ The generic rules allow each authenticated user to read/write their own app docu
 
 ## Configure this GitHub repository once
 
-1. Under **Settings → General**, enable **Template repository** for `harshaxnim/websiteSetup`.
+Rename `websiteSetup` to `OneAppToRuleThemAll` in **Settings → General → Repository name**. The cloud integration can push code but its repository rename request returned HTTP 403. The current URL remains `https://harshaxnim.github.io/websiteSetup/` until the owner completes that rename and the Pages workflow republishes. The code recognizes both template identities to preserve existing generated apps.
+
+1. Under **Settings → General**, enable **Template repository** for `harshaxnim/OneAppToRuleThemAll`.
 2. Make `main` the default branch using the repository's default branch setting. The original code remains on `legacy/flask-nginx` and `master`.
 3. Under **Settings → Pages → Build and deployment → Source**, select **GitHub Actions**.
 4. Under **Actions**, run **Deploy to GitHub Pages** on `main`, or push a new commit there. The workflow installs locked dependencies, runs unit tests, validates the public config, builds, and deploys `dist/` using official Pages Actions.
-5. Verify `https://harshaxnim.github.io/websiteSetup/`, APP_ID `websiteSetup`, and live Google sign-in and save/reload behavior. Test the same Google account across a second app to confirm its Firebase UID matches.
+5. After the rename, verify `https://harshaxnim.github.io/OneAppToRuleThemAll/`, APP_ID `OneAppToRuleThemAll`, and live Google sign-in and save/reload behavior. Test the same Google account across a second app to confirm its Firebase UID matches.
 
-With suitable administration permission, an agent can mark the repository as a template and set the default branch through `gh api --method PATCH repos/harshaxnim/websiteSetup -F is_template=true -f default_branch=main`. Inspect Pages first: `gh api repos/harshaxnim/websiteSetup/pages`. Only if absent (404), create it with `gh api --method POST repos/harshaxnim/websiteSetup/pages -f build_type=workflow`; verify afterward. An existing branch-based Pages configuration can be updated to `workflow` through the Pages update API. A permission-denied response is not evidence that Pages is absent.
+With suitable administration permission, an agent can mark the repository as a template and set the default branch through `gh api --method PATCH repos/harshaxnim/OneAppToRuleThemAll -F is_template=true -f default_branch=main`. Inspect Pages first: `gh api repos/harshaxnim/OneAppToRuleThemAll/pages`. Only if absent (404), create it with `gh api --method POST repos/harshaxnim/OneAppToRuleThemAll/pages -f build_type=workflow`; verify afterward. An existing branch-based Pages configuration can be updated to `workflow` through the Pages update API. A permission-denied response is not evidence that Pages is absent.
 
 ## Verification and directory rollout
 

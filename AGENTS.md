@@ -1,4 +1,4 @@
-# Working on apps from this template
+# Working on apps from OneAppToRuleThemAll
 
 Use the existing checkout. Cloud tasks are already isolated; create a Git worktree only when explicitly requested. Preserve user changes. Never commit private credentials or disable signature, checksum, or TLS verification.
 

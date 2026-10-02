@@ -1,14 +1,16 @@
-# Personal app template
+# OneAppToRuleThemAll
 
-A reusable starting point for personal web apps: Google sign-in, private Firestore storage, and GitHub Pages deployment. This repository also hosts the public Appspace directory of apps built from the template. Apps inherit the shared **gatewaybsite** Firebase project and public Web configuration. The same Google account has the same Firebase UID across apps; each app has its own data namespace.
+A reusable starting point for personal web apps: Google sign-in, private Firestore storage, and GitHub Pages deployment. This repository also hosts the public OneAppToRuleThemAll directory of apps built from the template. Apps inherit the shared **gatewaybsite** Firebase project and public Web configuration. The same Google account has the same Firebase UID across apps; each app has its own data namespace.
 
 **Use this template → create a repository → build your app → enable Pages → push to `main`.**
 
 The shared platform is configured once by the template owner. Future apps normally need no Firebase setup. See [ONE_TIME_SETUP.md](ONE_TIME_SETUP.md) only when completing or rebuilding that platform.
 
+The app is named **OneAppToRuleThemAll**. The matching GitHub repository rename is pending an owner changing **Settings → General → Repository name** from `websiteSetup` to `OneAppToRuleThemAll`; the cloud integration's rename request returned HTTP 403. Until then, the current repository and Pages URL still use `websiteSetup`. Existing template markers and directory records with `harshaxnim/websiteSetup` remain supported. Renaming the Pages path changes its derived APP_ID; use an explicit stable APP_ID if retaining existing private data is required.
+
 ## Start a new app
 
-1. Select **Use this template → Create a new repository**. Agents can also run `gh repo create OWNER/APP --template harshaxnim/websiteSetup --public --clone`.
+1. Select **Use this template → Create a new repository**. Agents can also run `gh repo create OWNER/APP --template harshaxnim/OneAppToRuleThemAll --public --clone`.
 2. Keep `config/firebase-config.js`, `lib/`, `firestore.rules`, and `.github/workflows/pages.yml`. Do not create a new Firebase project.
 3. Customize `index.html`, `app.js`, and `styles.css`. The root site is a public app directory. The notebook starter is in `examples/notebook/` and demonstrates private structured storage, realtime updates, and Google sign-in. Customize or replace the root UI for a new application; keep the shared platform modules.
 4. Ensure **Settings → Pages → Build and deployment → Source → GitHub Actions** is selected. Template files copy; repository settings do not. With a credential that has Pages and Administration write permission, inspect `gh api repos/OWNER/APP/pages` and create only if the response is 404: `gh api --method POST repos/OWNER/APP/pages -f build_type=workflow`. If it exists with a branch-based source, update it to workflow-based deployment. Do not add a PAT secret to each app.
@@ -152,4 +154,4 @@ This is a shared personal platform: namespaces separate normal application opera
 
 After a successful Pages Actions run, check the exact repository URL, verify the APP_ID in `app-manifest.json`, confirm the public directory loads without signing in, then add an app, change its status, and reload. A second account must not get edit controls for the first owner’s record. In `examples/notebook/`, sign in, save a note, reload, and confirm it returns. Sign out and ensure notes disappear; a second Google account must have an independent notebook. A different app path must use a different namespace. Google sign-in runs separately on each origin even though the shared project gives the same account the same UID.
 
-The old Flask/nginx code is preserved on [`legacy/flask-nginx`](https://github.com/harshaxnim/websiteSetup/tree/legacy/flask-nginx).
+The old Flask/nginx code is preserved on [`legacy/flask-nginx`](https://github.com/harshaxnim/OneAppToRuleThemAll/tree/legacy/flask-nginx).
