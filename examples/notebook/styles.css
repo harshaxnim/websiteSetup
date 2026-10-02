@@ -1,0 +1,76 @@
+:root { font-family: 'DM Sans', system-ui, sans-serif; color: #283830; background: #f4f3ef; font-synthesis: none; --green: #315b44; --muted: #737971; --border: #dcded6; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+button, input, textarea { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: default; opacity: .5; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visible { outline: 3px solid #789782; outline-offset: 4px; }
+[hidden] { display: none !important; }
+.shell { max-width: 1200px; padding: 0 48px; margin: 0 auto; }
+.topbar { height: 105px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); gap: 20px; }
+.brand { display: flex; align-items: center; color: inherit; text-decoration: none; font-size: 20px; font-weight: 700; letter-spacing: -.7px; }
+.brand-icon { display: grid; place-items: center; background: var(--green); color: white; border-radius: 10px; width: 35px; height: 35px; margin-right: 12px; font-size: 23px; }
+.brand-suffix { font-weight: 400; color: var(--muted); margin-left: 5px; }
+.account { display: flex; align-items: center; gap: 14px; font-size: 13px; }
+.button { border: 1px solid var(--border); background: #fafaf7; color: #314237; border-radius: 8px; padding: 12px 18px; font-size: 13px; font-weight: 600; display: inline-flex; justify-content: center; align-items: center; gap: 18px; }
+.button:hover:enabled { background: #e8ebe3; }
+.button-small { padding: 11px 15px; }
+.button-primary { background: var(--green); border-color: var(--green); color: white; }
+.button-primary:hover:enabled { background: #244731; }
+.intro { padding: 68px 0 48px; }
+.eyebrow { display: flex; align-items: center; gap: 9px; letter-spacing: 2px; font-size: 10px; font-weight: 700; }
+.status-dot { background: #749275; width: 6px; height: 6px; border-radius: 50%; }
+h1 { font: 600 clamp(42px, 5.8vw, 68px)/1.12 'Manrope', sans-serif; letter-spacing: -3.4px; margin: 25px 0 23px; }
+h1 span { color: #8a9587; }
+.intro p { color: var(--muted); font-size: 15px; line-height: 1.8; margin: 0; }
+.notice { font-size: 13px; line-height: 1.6; padding: 14px 18px; border: 1px solid #dfd2ae; background: #f4eddd; border-radius: 8px; margin-bottom: 24px; color: #705d34; }
+.section-heading { display: flex; justify-content: space-between; align-items: center; padding: 28px 0 22px; border-top: 1px solid var(--border); gap: 12px; }
+h2 { font: 600 21px 'Manrope', sans-serif; margin: 0 0 9px; letter-spacing: -.6px; display: flex; align-items: center; gap: 10px; }
+.count { font: 500 11px 'DM Sans', sans-serif; background: #e6e9e0; padding: 4px 7px; border-radius: 5px; }
+.section-heading p { font-size: 12px; color: var(--muted); margin: 0; }
+.workspace-label { letter-spacing: 1.5px; font-size: 9px; color: #848b80; }
+.notebook-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.composer { background: #fffefa; border: 1px solid #dfdfd4; border-radius: 13px; padding: 26px; }
+.card-eyebrow { font-size: 9px; letter-spacing: 1.8px; color: #87917e; font-weight: 700; display: block; margin-bottom: 23px; }
+.composer label { display: block; font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+.composer input, .composer textarea { width: 100%; background: transparent; border: none; border-bottom: 1px solid #e6e7df; border-radius: 0; color: #283830; padding: 5px 0 13px; margin-bottom: 20px; font-size: 13px; }
+.composer textarea { resize: vertical; min-height: 95px; line-height: 1.6; margin-bottom: 13px; }
+.composer input::placeholder, .composer textarea::placeholder { color: #a3a69b; }
+.composer-footer { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.composer-footer > span { font-size: 10px; color: #979c91; }
+.notes { min-height: 334px; display: flex; flex-direction: column; gap: 12px; max-height: 470px; overflow-y: auto; }
+.empty-state { flex: 1; border: 1px dashed #cfd5c9; border-radius: 13px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 35px; background: #eef0e9; }
+.empty-icon { font-size: 46px; color: #92a28b; margin-bottom: 16px; }
+.empty-state h3 { font: 600 16px 'Manrope', sans-serif; margin: 0 0 10px; }
+.empty-state p { color: #8c9487; font-size: 12px; line-height: 1.8; margin: 0; }
+.note-card { background: #fffefa; border: 1px solid var(--border); border-radius: 12px; padding: 21px; overflow-wrap: anywhere; }
+.note-top { display: flex; align-items: start; justify-content: space-between; gap: 14px; }
+.note-card h3 { margin: 0; font-size: 16px; font-weight: 600; }
+.note-card p { font-size: 13px; color: #6f796c; line-height: 1.6; white-space: pre-wrap; margin: 12px 0; }
+.note-card time { color: #959c8d; font-size: 10px; }
+.delete-note { border: none; background: none; font-size: 12px; color: #8a756a; padding: 2px 0; }
+.possibilities { display: grid; grid-template-columns: repeat(3, 1fr); gap: 38px; padding: 45px 0 50px; }
+.feature-number { font-size: 9px; color: #8e9d87; letter-spacing: 1px; }
+.possibilities h3 { font-size: 13px; font-weight: 600; margin: 14px 0 9px; }
+.possibilities p { font-size: 11px; line-height: 1.8; color: #8b9185; max-width: 240px; margin: 0; }
+footer { padding: 25px 0 30px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: #90978a; }
+footer span:last-child { letter-spacing: 1.4px; font-size: 9px; }
+@media (max-width: 680px) {
+ .shell { padding: 0 22px; }
+ .topbar { height: 85px; }
+ .brand { font-size: 17px; }
+ .brand-suffix, #user-name, .workspace-label { display: none; }
+ .button-small { font-size: 11px; padding: 10px; gap: 8px; }
+ .intro { padding: 45px 0 38px; }
+ h1 { letter-spacing: -2px; }
+ .intro p { font-size: 13px; }
+ .notebook-grid { grid-template-columns: 1fr; gap: 16px; }
+ .composer { padding: 22px; }
+ .notes { min-height: 250px; }
+ .possibilities { gap: 25px; grid-template-columns: 1fr; padding: 35px 0; }
+ .possibilities > div { display: grid; grid-template-columns: 28px 1fr; column-gap: 10px; }
+ .possibilities h3 { margin: 0 0 8px; }
+ .possibilities p { grid-column: 2; max-width: none; }
+ .feature-number { margin-top: 3px; }
+ footer { font-size: 9px; }
+}

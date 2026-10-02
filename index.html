@@ -1,48 +1,42 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#f4f3ef" />
-    <meta name="description" content="A personal workspace built on a reusable shared platform." />
-    <title>Personal workspace</title>
-    <link rel="stylesheet" href="./styles.css" />
-  </head>
-  <body>
-    <div class="shell">
-      <header class="topbar">
-        <a class="brand" href="./" aria-label="Personal workspace home"><span class="brand-icon" aria-hidden="true">p.</span> personal<span class="brand-suffix"> / workspace</span></a>
-        <div class="account"><span id="user-name"></span><button id="auth-button" class="button button-small" type="button">Sign in with Google <span aria-hidden="true">↗</span></button></div>
-      </header>
-      <main>
-        <section class="intro">
-          <div class="eyebrow"><span class="status-dot" aria-hidden="true"></span> A LITTLE SPACE OF YOUR OWN</div>
-          <h1>Start with an idea.<br /><span>Make it yours.</span></h1>
-          <p>Your notes, your projects, your next good idea.<br class="desktop-break" /> A simple starting point for whatever you want to build.</p>
-        </section>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f6f7f8" />
+  <meta name="description" content="A directory of personal apps built on one shared platform." />
+  <title>Appspace · Personal app directory</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <svg class="svg-defs" aria-hidden="true"><defs>
+    <symbol id="icon-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></symbol>
+    <symbol id="icon-arrow" viewBox="0 0 24 24"><path d="M6 18 18 6M6 6h12v12"/></symbol>
+    <symbol id="icon-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></symbol>
+    <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="icon-code" viewBox="0 0 24 24"><path d="m8 6-6 6 6 6m8-12 6 6-6 6m-3-15-2 18"/></symbol>
+  </defs></svg>
+  <div class="layout">
+    <aside class="sidebar">
+      <a class="brand" href="./"><span class="brand-mark"><svg><use href="#icon-grid"/></svg></span>appspace<span class="brand-period">.</span></a>
+      <div class="sidebar-label">YOUR ECOSYSTEM</div>
+      <a class="nav-link selected" href="#directory"><svg><use href="#icon-grid"/></svg>App directory<span id="nav-count">0</span></a>
+      <a class="nav-link" href="https://github.com/harshaxnim/websiteSetup" target="_blank" rel="noopener noreferrer"><svg><use href="#icon-code"/></svg>The template<svg class="nav-arrow"><use href="#icon-arrow"/></svg></a>
+      <div class="sidebar-bottom"><span class="tiny-dot"></span>One platform. Endless possibilities.<p>A little infrastructure.<br />A lot of room to build.</p><a href="./examples/notebook/">Explore the starter app ↗</a></div>
+    </aside>
+    <div class="content">
+      <header class="topbar"><span class="breadcrumb">Workspace <span>/</span> <strong>App directory</strong></span><div class="account"><span id="user-name"></span><button id="auth-button" class="button button-signin" type="button" aria-label="Sign in with Google">Sign in <span aria-hidden="true">↗</span></button></div></header>
+      <main id="directory">
+        <section class="intro"><div><span class="eyebrow">THE THINGS WE BUILD</span><h1>Small ideas.<br class="mobile-break" /> A growing ecosystem.</h1><p>A home for every app built with our shared template.<br class="desktop-break" /> Explore what’s live, what’s taking shape, and what’s next.</p></div><button id="add-app" class="button button-primary" hidden><svg><use href="#icon-plus"/></svg>Add an app</button></section>
         <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
-        <section class="workspace" aria-labelledby="notes-heading">
-          <div class="section-heading"><div><h2 id="notes-heading">Your notebook <span id="note-count" class="count">0</span></h2><p id="storage-status">Sign in to keep your notes with you.</p></div><span class="workspace-label">PERSONAL & PRIVATE</span></div>
-          <div class="notebook-grid">
-            <form id="note-form" class="composer">
-              <span class="card-eyebrow">CAPTURE SOMETHING</span>
-              <label for="note-title">Title</label><input id="note-title" name="title" placeholder="A thought worth keeping…" maxlength="120" required disabled />
-              <label for="note-body">Note</label><textarea id="note-body" name="body" placeholder="Give your idea a little room." rows="5" maxlength="10000" disabled></textarea>
-              <div class="composer-footer"><span id="composer-hint">A fresh page awaits.</span><button id="save-button" class="button button-primary" type="submit" disabled>Save note <span aria-hidden="true">+</span></button></div>
-            </form>
-            <div id="notes" class="notes" aria-live="polite">
-              <div class="empty-state"><span class="empty-icon" aria-hidden="true">✳</span><h3>Good ideas start here.</h3><p>Sign in, jot something down,<br />and come back to it anytime.</p></div>
-            </div>
-          </div>
-        </section>
-        <section class="possibilities" aria-label="Workspace features">
-          <div><span class="feature-number">01</span><h3>One familiar sign-in</h3><p>Your Google account brings you back to every personal app.</p></div>
-          <div><span class="feature-number">02</span><h3>A space for each idea</h3><p>Every app has its own notebook. Your work stays where it belongs.</p></div>
-          <div><span class="feature-number">03</span><h3>Built to grow with you</h3><p>Start with a note. Turn it into a project, a collection, or something new.</p></div>
-        </section>
+        <section class="stats" aria-label="Directory overview"><div class="stat"><span>All apps</span><strong id="count-all">—</strong><small>Ideas in the ecosystem</small></div><div class="stat"><span><i class="dot dot-live"></i>Live</span><strong id="count-live">—</strong><small>Ready to explore</small></div><div class="stat"><span><i class="dot dot-development"></i>In development</span><strong id="count-development">—</strong><small>Good things take shape</small></div><div class="stat"><span><i class="dot dot-paused"></i>On pause</span><strong id="count-paused">—</strong><small>Room to come back</small></div></section>
+        <section class="apps-section" aria-labelledby="apps-heading"><div class="section-top"><h2 id="apps-heading">Explore the apps <span id="result-count">0</span></h2><button id="sync-github" class="button button-secondary" hidden>Sync from GitHub <span aria-hidden="true">↻</span></button></div><div class="toolbar"><div id="filters" class="filters" aria-label="Filter apps by status"><button class="filter active" data-status="all" aria-pressed="true">All apps</button><button class="filter" data-status="live" aria-pressed="false">Live</button><button class="filter" data-status="development" aria-pressed="false">Building</button><button class="filter" data-status="planning" aria-pressed="false">Planned</button><button class="filter" data-status="paused" aria-pressed="false">Paused</button><button class="filter" data-status="archived" aria-pressed="false">Archived</button></div><label class="search"><svg><use href="#icon-search"/></svg><span class="sr-only">Search apps</span><input id="search-apps" type="search" placeholder="Find an app…" autocomplete="off" /></label></div><div id="app-list" class="app-grid" aria-live="polite" aria-busy="true"><div class="empty-state"><div class="empty-mark"><svg><use href="#icon-grid"/></svg></div><h3>Opening the directory…</h3><p>Gathering the latest apps and updates.</p></div></div></section>
+        <section class="platform-banner"><div class="platform-symbol"><svg><use href="#icon-code"/></svg></div><div><span class="eyebrow">BUILT ON A SHARED FOUNDATION</span><h2>More building. Less setting up.</h2><p>One sign-in. Private data. A fresh starting point for your next idea.</p></div><a class="button banner-button" href="https://github.com/harshaxnim/websiteSetup/generate" target="_blank" rel="noopener noreferrer">Use the template <svg><use href="#icon-arrow"/></svg></a></section>
       </main>
-      <footer><span>Yours to build. Yours to keep.</span><span id="app-identity">PERSONAL WORKSPACE</span></footer>
+      <footer><span>Made for ideas worth building.</span><span>APPSPACE <i aria-hidden="true">/</i> SHARED PLATFORM</span></footer>
     </div>
-    <script type="module" src="./app.js"></script>
-  </body>
+  </div>
+  <dialog id="app-dialog" aria-labelledby="dialog-title"><form id="app-form"><div class="dialog-heading"><div><span class="eyebrow">YOUR CORNER OF THE ECOSYSTEM</span><h2 id="dialog-title">Add an app</h2></div><button type="button" id="close-dialog" class="icon-button" aria-label="Close app form">×</button></div><p class="form-description">These details appear in the public directory. You’ll own this app’s record.</p><label for="app-repository">GitHub repository</label><input id="app-repository" name="repository" placeholder="harshaxnim/my-app" required maxlength="140" /><label for="app-id">App ID</label><input id="app-id" name="appId" placeholder="my-app" required maxlength="128" /><label for="app-name">App name</label><input id="app-name" name="name" placeholder="A name worth remembering" required maxlength="120" /><label for="app-description">Description</label><textarea id="app-description" name="description" rows="3" placeholder="What does it help you do?" maxlength="1000"></textarea><div class="form-row"><div><label for="app-status">Status</label><select id="app-status" name="status"><option value="planning">Planned</option><option value="development">In development</option><option value="live">Live</option><option value="paused">Paused</option><option value="archived">Archived</option></select></div></div><label for="app-url">App URL</label><input id="app-url" name="url" type="url" placeholder="https://harshaxnim.github.io/my-app/" required maxlength="2048" /><p id="form-error" class="form-error" role="alert" hidden></p><div class="dialog-footer"><button id="cancel-dialog" class="button" type="button">Cancel</button><button id="save-app" class="button button-primary" type="submit">Save app</button></div></form></dialog>
+  <script type="module" src="./app.js"></script>
+</body>
 </html>

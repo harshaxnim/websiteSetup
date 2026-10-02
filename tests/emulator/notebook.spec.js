@@ -12,7 +12,7 @@ async function signIn(page, email) {
 test('Google emulator sign-in, write, reload, sign-out, and second-user isolation', async ({ page }) => {
   page.on('requestfailed', request => console.error('Browser request failed:', request.url().split('?')[0], request.failure()?.errorText));
   page.on('pageerror', error => console.error('Browser exception:', error.message));
-  await page.goto('/');
+  await page.goto('/examples/notebook/');
   await signIn(page, 'alice@example.test');
   await page.getByLabel('Title', { exact: true }).fill('A reusable platform');
   await page.getByLabel('Note', { exact: true }).fill('<script>this must remain text</script>');

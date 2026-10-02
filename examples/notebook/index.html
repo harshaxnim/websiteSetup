@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f4f3ef" />
+    <meta name="description" content="A personal workspace built on a reusable shared platform." />
+    <title>Personal workspace</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <a class="brand" href="./" aria-label="Personal workspace home"><span class="brand-icon" aria-hidden="true">p.</span> personal<span class="brand-suffix"> / workspace</span></a>
+        <div class="account"><span id="user-name"></span><button id="auth-button" class="button button-small" type="button">Sign in with Google <span aria-hidden="true">↗</span></button></div>
+      </header>
+      <main>
+        <section class="intro">
+          <div class="eyebrow"><span class="status-dot" aria-hidden="true"></span> A LITTLE SPACE OF YOUR OWN</div>
+          <h1>Start with an idea.<br /><span>Make it yours.</span></h1>
+          <p>Your notes, your projects, your next good idea.<br class="desktop-break" /> A simple starting point for whatever you want to build.</p>
+        </section>
+        <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+        <section class="workspace" aria-labelledby="notes-heading">
+          <div class="section-heading"><div><h2 id="notes-heading">Your notebook <span id="note-count" class="count">0</span></h2><p id="storage-status">Sign in to keep your notes with you.</p></div><span class="workspace-label">PERSONAL & PRIVATE</span></div>
+          <div class="notebook-grid">
+            <form id="note-form" class="composer">
+              <span class="card-eyebrow">CAPTURE SOMETHING</span>
+              <label for="note-title">Title</label><input id="note-title" name="title" placeholder="A thought worth keeping…" maxlength="120" required disabled />
+              <label for="note-body">Note</label><textarea id="note-body" name="body" placeholder="Give your idea a little room." rows="5" maxlength="10000" disabled></textarea>
+              <div class="composer-footer"><span id="composer-hint">A fresh page awaits.</span><button id="save-button" class="button button-primary" type="submit" disabled>Save note <span aria-hidden="true">+</span></button></div>
+            </form>
+            <div id="notes" class="notes" aria-live="polite">
+              <div class="empty-state"><span class="empty-icon" aria-hidden="true">✳</span><h3>Good ideas start here.</h3><p>Sign in, jot something down,<br />and come back to it anytime.</p></div>
+            </div>
+          </div>
+        </section>
+        <section class="possibilities" aria-label="Workspace features">
+          <div><span class="feature-number">01</span><h3>One familiar sign-in</h3><p>Your Google account brings you back to every personal app.</p></div>
+          <div><span class="feature-number">02</span><h3>A space for each idea</h3><p>Every app has its own notebook. Your work stays where it belongs.</p></div>
+          <div><span class="feature-number">03</span><h3>Built to grow with you</h3><p>Start with a note. Turn it into a project, a collection, or something new.</p></div>
+        </section>
+      </main>
+      <footer><span>Yours to build. Yours to keep.</span><span id="app-identity">PERSONAL WORKSPACE</span></footer>
+    </div>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

@@ -1,6 +1,6 @@
 # Personal app template
 
-A reusable starting point for personal web apps: Google sign-in, private Firestore storage, and GitHub Pages deployment. Apps inherit the shared **gatewaybsite** Firebase project and public Web configuration. The same Google account has the same Firebase UID across apps; each app has its own data namespace.
+A reusable starting point for personal web apps: Google sign-in, private Firestore storage, and GitHub Pages deployment. This repository also hosts the public Appspace directory of apps built from the template. Apps inherit the shared **gatewaybsite** Firebase project and public Web configuration. The same Google account has the same Firebase UID across apps; each app has its own data namespace.
 
 **Use this template → create a repository → build your app → enable Pages → push to `main`.**
 
@@ -10,7 +10,7 @@ The shared platform is configured once by the template owner. Future apps normal
 
 1. Select **Use this template → Create a new repository** (once the owner enables template status). Agents can also run `gh repo create OWNER/APP --template harshaxnim/websiteSetup --public --clone`.
 2. Keep `config/firebase-config.js`, `lib/`, `firestore.rules`, and `.github/workflows/pages.yml`. Do not create a new Firebase project.
-3. Customize `index.html`, `app.js`, and `styles.css`. The included notebook demonstrates private structured storage, realtime updates, and Google sign-in.
+3. Customize `index.html`, `app.js`, and `styles.css`. The root site is a public app directory. The notebook starter is in `examples/notebook/` and demonstrates private structured storage, realtime updates, and Google sign-in. Customize or replace the root UI for a new application; keep the shared platform modules.
 4. Ensure **Settings → Pages → Build and deployment → Source → GitHub Actions** is selected. Template files copy; repository settings do not. With a credential that has Pages and Administration write permission, inspect `gh api repos/OWNER/APP/pages` and create only if the response is 404: `gh api --method POST repos/OWNER/APP/pages -f build_type=workflow`. If it exists with a branch-based source, update it to workflow-based deployment. Do not add a PAT secret to each app.
 5. Push to `main`. The official Pages Actions build and publish `dist/`. Check the Actions run and visit `https://OWNER.github.io/APP/`.
 
@@ -52,6 +52,39 @@ VITE_USE_EMULATORS=true npm run dev
 ```
 
 Emulator mode is development-only and uses a deliberately fictional `demo-personal-apps` project; it cannot be enabled in production output. It never writes to the shared live database. The browser integration test uses the Auth emulator's supported Google credential flow and verifies persistence, sign-out, and isolation through the UI. Production's interactive Google popup still needs separate live verification; its helper scripts require Internet access even for an emulated popup.
+
+## App directory
+
+The root website lists the shared `appDirectory/{appId}` collection. Visitors can search and filter apps by **planned, in development, live, paused, or archived** without signing in. Signed-in users can add an app and manage records they own. The design starts at a 360 px mobile viewport, with accessible filters, forms, readable inputs, and touch-sized controls; `AGENTS.md` requires mobile validation for future apps.
+
+Every directory document contains public metadata only:
+
+```text
+appDirectory/{appId}
+  ownerUid
+  appId, repository, repositoryUrl, template
+  name, description, url, status
+  createdAt, updatedAt
+```
+
+The creator's authenticated UID becomes `ownerUid`. Firestore rules allow public reads, require the creator to set their own UID, restrict edits/deletion to that owner, and prevent ownership transfer. No owner UID is hardcoded. Private `users/{userId}/apps/...` rules are unchanged. Directory IDs are global across the shared project; use an explicit APP_ID override if another repository has already registered the same ID.
+
+Apps that call the shared `onUserChanged` register on their first authenticated visit at a GitHub Pages URL. This creates a live record once and preserves later owner edits; normal visits do not overwrite metadata/status or transfer ownership. An authenticated user other than the existing owner can use the app but cannot edit its directory record. The template directory itself and local development do not automatically register as new apps. For custom domains, register through `getAppRegistry().registerApp(appInfo)` or add the app in the directory.
+
+**Sync from GitHub** searches the current repository owner's public repos for template ancestry or the inherited `template.json` marker. It adds missing records owned by the signed-in caller. Private repos require manual registration. Existing names and statuses are preserved. A deployed `app-manifest.json` verifies a newly discovered app is live; Pages being enabled alone does not. GitHub's unauthenticated API may apply rate limits; the UI reports errors and allows manual registration. Discovery is run explicitly; no background service watches GitHub.
+
+`config/app-config.js` optionally defines `APP_DETAILS` (`name`, `description`, initial `status`, custom `url`) alongside an APP_ID override. Repository identity is supplied automatically by GitHub Actions or the Git origin in local builds. The build emits `app-manifest.json`; keep `template.json` in generated apps so the directory can discover them.
+
+```js
+import { getAppRegistry, appInfo } from './lib/platform.js';
+const directory = getAppRegistry();
+const stop = directory.subscribeApps(records => render(records), console.error);
+await directory.registerApp(appInfo); // first creation owns the record; repeats preserve it
+await directory.setStatus(appInfo.appId, 'paused'); // owner only
+stop();
+```
+
+The collection is created in Firestore when its first real document is saved; Firestore has no empty-folder objects. Publish the updated `firestore.rules` once before using the directory. This collection adds only app metadata and never exposes private application documents.
 
 ## Application identity
 
@@ -114,6 +147,6 @@ This is a shared personal platform: namespaces separate normal application opera
 
 ## Verify deployment
 
-After a successful Pages Actions run, check the exact repository URL, inspect the APP_ID shown in the footer, sign in with Google, save a note, reload, and confirm it returns. Sign out and ensure notes disappear; a second Google account must have an independent notebook. A different app path must use a different namespace. Google sign-in runs separately on each origin even though the shared project gives the same account the same UID.
+After a successful Pages Actions run, check the exact repository URL, verify the APP_ID in `app-manifest.json`, confirm the public directory loads without signing in, then add an app, change its status, and reload. A second account must not get edit controls for the first owner’s record. In `examples/notebook/`, sign in, save a note, reload, and confirm it returns. Sign out and ensure notes disappear; a second Google account must have an independent notebook. A different app path must use a different namespace. Google sign-in runs separately on each origin even though the shared project gives the same account the same UID.
 
 The old Flask/nginx code is preserved on [`legacy/flask-nginx`](https://github.com/harshaxnim/websiteSetup/tree/legacy/flask-nginx).
