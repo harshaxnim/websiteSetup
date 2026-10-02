@@ -4,13 +4,10 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-  # Legacy Pages sites also build repository source. Publish Vite last.
-  workflow_run:
-    workflows: ["pages build and deployment"]
-    types: [completed]
 
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
 
@@ -20,10 +17,6 @@ concurrency:
 
 jobs:
   deploy:
-    if: >-
-      github.event_name != 'workflow_run' ||
-      (github.event.workflow_run.conclusion == 'success' &&
-       github.event.workflow_run.head_branch == 'main')
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -38,6 +31,25 @@ jobs:
       - run: npm test
       - run: npm run check:firebase
       - run: npm run build
+      - name: Wait for any legacy Pages build before publishing Vite
+        if: github.event_name == 'push'
+        timeout-minutes: 5
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          legacy_pages_source=$(gh api "repos/${GITHUB_REPOSITORY}/pages" --jq '.build_type == "legacy" and .source.branch == "main"')
+          if [[ "$legacy_pages_source" != true ]]; then
+            exit 0
+          fi
+          for legacy_attempt in {1..60}; do
+            legacy_build_state=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${GITHUB_SHA}&per_page=100" --jq '[.workflow_runs[] | select(.name == "pages build and deployment") | .status] | if length > 0 and all(. == "completed") then "complete" else "waiting" end')
+            if [[ "$legacy_build_state" == complete ]]; then
+              exit 0
+            fi
+            sleep 5
+          done
+          echo 'The legacy Pages build did not finish before deployment.' >&2
+          exit 1
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v4
         with:
