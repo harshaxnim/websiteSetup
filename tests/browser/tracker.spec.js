@@ -1,0 +1,104 @@
+import { test, expect } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
+async function add(page, title, url = 'https://example.com/learn', notes = '') {
+  await page.getByRole('button', { name: 'Add entry', exact: true }).click();
+  await page.getByLabel('Title', { exact: true }).fill(title);
+  await page.getByLabel('Links', { exact: true }).fill(url);
+  await page.getByLabel('Notes optional').fill(notes);
+  await page.getByRole('button', { name: 'Save entry', exact: true }).click();
+  await expect(page.locator('#entry-dialog')).not.toBeVisible();
+}
+async function tools(page, name) {
+  await page.getByRole('button', { name: 'Open tools' }).click();
+  await page.getByRole('button', { name, exact: true }).click();
+}
+test('mobile CRUD, search, completion, JSON round trip, and safe invalid import', async ({ page }) => {
+  const errors = []; page.on('pageerror', error => errors.push(error.message));
+  await page.setViewportSize({ width: 360, height: 800 });
+  await page.goto('/learning-tracker/');
+  await expect(page.locator('.entry')).toHaveCount(1);
+  await expect(page.locator('.resource-links a')).toHaveCount(2);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(360);
+  await add(page, 'Learn TypeScript', 'https://www.typescriptlang.org/docs/', '<script>plain notes</script>\nGenerics first');
+  await expect(page.locator('.notes')).toHaveText('<script>plain notes</script>\nGenerics first');
+  await page.getByRole('button', { name: 'Edit Learn TypeScript', exact: true }).click();
+  await page.getByLabel('Title', { exact: true }).fill('TypeScript foundations');
+  await page.getByLabel('Links', { exact: true }).fill('javascript:alert(1)');
+  await page.getByRole('button', { name: 'Save entry', exact: true }).click();
+  await expect(page.locator('#entry-error')).toContainText('https://');
+  await page.getByLabel('Links', { exact: true }).fill('https://www.typescriptlang.org/docs/');
+  await page.getByRole('button', { name: 'Save entry', exact: true }).click();
+  await page.getByRole('searchbox', { name: 'Search entries' }).fill('generics');
+  await expect(page.locator('.entry')).toHaveCount(1);
+  await page.getByRole('button', { name: 'Clear search' }).click();
+  await page.getByRole('button', { name: 'Mark TypeScript foundations done', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Mark TypeScript foundations to learn', exact: true })).toBeFocused();
+  await page.getByRole('button', { name: 'Done', exact: true }).click();
+  await expect(page.locator('.entry-title')).toHaveText('TypeScript foundations');
+  await page.getByRole('button', { name: 'To learn', exact: true }).click();
+  await expect(page.locator('.entry-title')).toHaveText('Two videos to explore');
+  await page.getByRole('button', { name: 'All', exact: true }).click();
+  const downloadPromise = page.waitForEvent('download');
+  await tools(page, 'Export JSON');
+  const download = await downloadPromise;
+  const exported = await readFile(await download.path(), 'utf8');
+  expect(JSON.parse(exported).entries[1].done).toBe(true);
+  await page.getByRole('button', { name: 'Delete TypeScript foundations', exact: true }).click();
+  await page.getByRole('button', { name: 'Keep entry', exact: true }).click();
+  await expect(page.locator('.entry')).toHaveCount(2);
+  await page.getByRole('button', { name: 'Delete TypeScript foundations', exact: true }).click();
+  await page.getByRole('button', { name: 'Delete entry', exact: true }).click();
+  await expect(page.locator('.entry')).toHaveCount(1);
+  await page.locator('#import-file').setInputFiles({ name: 'backup.json', mimeType: 'application/json', buffer: Buffer.from(exported) });
+  await expect(page.locator('#import-summary')).toContainText('2 entries');
+  await page.getByRole('button', { name: 'Replace list', exact: true }).click();
+  await expect(page.locator('.entry')).toHaveCount(2);
+  await expect(page.locator('.entry.done')).toHaveCount(1);
+  await page.locator('#import-file').setInputFiles({ name: 'unsafe.json', mimeType: 'application/json', buffer: Buffer.from('[{"title":"Unsafe","url":"javascript:alert(1)"}]') });
+  await expect(page.locator('#toast')).toContainText('https://');
+  await expect(page.locator('.entry')).toHaveCount(2);
+  await page.locator('#import-file').setInputFiles({ name: 'backup.json', mimeType: 'application/json', buffer: Buffer.from(exported) });
+  await page.getByRole('button', { name: 'Add to list', exact: true }).click();
+  await expect(page.locator('.entry')).toHaveCount(4);
+  await page.reload();
+  await expect(page.locator('.entry')).toHaveCount(4);
+  await tools(page, 'Add to home screen');
+  await expect(page.locator('#install-dialog')).toContainText('Add to Home Screen');
+  expect(errors).toEqual([]);
+});
+test('keyboard reorder preserves filtered positions and handles all viewport sizes', async ({ page }) => {
+  await page.goto('/learning-tracker/');
+  await add(page, 'Hidden done');
+  await add(page, 'Read about habit building', 'https://example.com/habits', 'Start small. Make a little space every day.');
+  await page.getByRole('button', { name: 'Mark Hidden done done', exact: true }).click();
+  await page.getByRole('button', { name: 'To learn', exact: true }).click();
+  await page.getByRole('button', { name: 'Reorder Read about habit building' }).press('ArrowUp');
+  await expect(page.locator('.entry-title')).toHaveText(['Read about habit building', 'Two videos to explore']);
+  await page.getByRole('button', { name: 'All', exact: true }).click();
+  await expect(page.locator('.entry-title')).toHaveText(['Read about habit building', 'Hidden done', 'Two videos to explore']);
+  await expect(page.locator('#toast')).toBeHidden({ timeout: 6000 });
+  for (const width of [360, 390, 1280]) {
+    await page.setViewportSize({ width, height: width === 1280 ? 900 : 844 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    await page.screenshot({ path: `/tmp/learning-tracker-${width}.png`, fullPage: true });
+  }
+  await page.reload();
+  await expect(page.locator('.entry-title')).toHaveText(['Read about habit building', 'Hidden done', 'Two videos to explore']);
+});
+test('touch drag reorders on an iPhone-sized screen and persists after reload', async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+  const page = await context.newPage();
+  await page.goto('http://127.0.0.1:4173/learning-tracker/');
+  await add(page, 'Second resource');
+  const grip = await page.getByRole('button', { name: 'Reorder Second resource' }).boundingBox();
+  const first = await page.locator('.entry').first().boundingBox();
+  const session = await context.newCDPSession(page);
+  const x = grip.x + grip.width / 2, from = grip.y + grip.height / 2, to = first.y + 10;
+  await session.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y: from }] });
+  for (let step = 1; step <= 10; step++) await session.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x, y: from + (to - from) * step / 10 }] });
+  await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await expect(page.locator('.entry-title')).toHaveText(['Second resource', 'Two videos to explore']);
+  await page.reload();
+  await expect(page.locator('.entry-title')).toHaveText(['Second resource', 'Two videos to explore']);
+  await context.close();
+});

@@ -157,3 +157,7 @@ This is a shared personal platform: namespaces separate normal application opera
 After a successful Pages Actions run, check the exact repository URL, verify the APP_ID in `app-manifest.json`, confirm the public directory loads without signing in, then add an app, change its status, and reload. A second account must not get edit controls for the first owner’s record. In `examples/notebook/`, sign in, save a note, reload, and confirm it returns. Sign out and ensure notes disappear; a second Google account must have an independent notebook. A different app path must use a different namespace. Google sign-in runs separately on each origin even though the shared project gives the same account the same UID.
 
 The old Flask/nginx code is preserved on [`legacy/flask-nginx`](https://github.com/harshaxnim/OneAppToRuleThemAll/tree/legacy/flask-nginx).
+
+## Learning Tracker
+
+The site also hosts a complete [Learning Tracker](learning-tracker/README.md) at `learning-tracker/`, with its own branding and stable private namespace. It supports links and notes, touch/keyboard reordering, search, completion filters, JSON backups, optional Google sync, and offline home-screen installation. The root remains the public app catalogue. Run `npm run test:offline` after building to verify the compiled PWA at the Pages subpath.
