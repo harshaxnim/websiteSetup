@@ -1,0 +1,25 @@
+{
+  "name": "personal-app-template",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.12.0" },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "node --test tests/app-id.test.js",
+    "test:rules": "firebase emulators:exec --only firestore --project demo-personal-apps 'node --test tests/storage.test.js'",
+    "test:browser": "playwright test",
+    "test:e2e": "firebase emulators:exec --only auth,firestore --project demo-personal-apps 'playwright test --config playwright.emulator.config.js'",
+    "check:firebase": "node scripts/check-firebase-config.js",
+    "deploy:rules": "npm run check:firebase && node scripts/deploy-rules.js"
+  },
+  "dependencies": { "firebase": "12.19.0" },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.0",
+    "@playwright/test": "^1.55.0",
+    "firebase-tools": "^14.0.0",
+    "vite": "^7.0.0"
+  }
+}
