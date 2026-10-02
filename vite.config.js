@@ -2,7 +2,9 @@ import { defineConfig } from 'vite';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { resolveAppInfo, validateAppRecord } from './lib/app-info.js';
+import { resolveAppInfo, validateAppRecord, TEMPLATE_REPOSITORY } from './lib/app-info.js';
+import { resolveCatalogueApps } from './lib/catalogue.js';
+import { HOSTED_APPS } from './config/catalogue-apps.js';
 import { APP_ID, APP_DETAILS } from './config/app-config.js';
 import { APP_ID as TRACKER_ID, APP_DETAILS as TRACKER_DETAILS } from './learning-tracker/config.js';
 
@@ -21,14 +23,22 @@ validateAppRecord(manifest);
 const trackerUrl = new URL('learning-tracker/', manifest.url).href;
 const trackerManifest = resolveAppInfo({ repository, override: TRACKER_ID, details: { ...TRACKER_DETAILS, url: trackerUrl, iconUrl: new URL('icon.svg', trackerUrl).href } });
 validateAppRecord(trackerManifest);
+const catalogue = { schemaVersion: 1, repository, template: TEMPLATE_REPOSITORY, apps: resolveCatalogueApps(manifest, HOSTED_APPS) };
 export default defineConfig({
   base: './',
   define: { __APP_REPOSITORY__: JSON.stringify(repository) },
-  build: { rollupOptions: { input: { directory: 'index.html', tracker: 'learning-tracker/index.html', notebook: 'examples/notebook/index.html' } } },
+  build: { rollupOptions: { input: { directory: 'index.html', tracker: 'learning-tracker/index.html', notebook: 'examples/notebook/index.html', publisher: 'setup/publisher/index.html' } } },
   plugins: [{
     name: 'app-manifest',
+    configureServer(server) {
+      server.middlewares.use('/app-catalog.json', (_, response) => {
+        response.setHeader('Content-Type', 'application/json');
+        response.end(JSON.stringify(catalogue));
+      });
+    },
     generateBundle(_, bundle) {
       this.emitFile({ type: 'asset', fileName: 'app-manifest.json', source: JSON.stringify(manifest, null, 2) });
+      this.emitFile({ type: 'asset', fileName: 'app-catalog.json', source: JSON.stringify(catalogue, null, 2) });
       this.emitFile({ type: 'asset', fileName: 'learning-tracker/app-manifest.json', source: JSON.stringify(trackerManifest, null, 2) });
       // Cache only this app's shell and build assets. No auth, Firestore, or
       // private API responses enter the service-worker cache.

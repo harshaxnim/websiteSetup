@@ -31,6 +31,8 @@ jobs:
       - run: npm test
       - run: npm run check:firebase
       - run: npm run build
+      - name: Verify this app was registered during template setup
+        run: npm run check:registration
       - name: Wait for any legacy Pages build before publishing Vite
         if: github.event_name == 'push'
         timeout-minutes: 5

@@ -1,0 +1,31 @@
+name: Register apps in Firestore
+run-name: Register apps (${{ inputs.request_id }})
+on:
+  workflow_dispatch:
+    inputs:
+      catalogue:
+        description: Validated public app metadata generated during setup
+        required: true
+        type: string
+      request_id:
+        description: Setup request identifier
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  register:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Create missing app catalogue entries as the Firebase publisher
+        run: node scripts/register-catalogue.js
+        env:
+          APP_CATALOGUE_JSON: ${{ inputs.catalogue }}
+          EXPECTED_REPOSITORY_OWNER: ${{ github.repository_owner }}
+          FIREBASE_REFRESH_TOKEN: ${{ secrets.FIREBASE_REFRESH_TOKEN }}
