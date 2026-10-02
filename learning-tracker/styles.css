@@ -1,12 +1,26 @@
 :root {
-  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --font-ui:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --font-accent:Georgia,"Times New Roman",serif;
+  font-family:var(--font-ui);
   color:#28342b;
-  background:#f6f4ee;
   font-synthesis:none;
   --green:#466a51;
-  --muted:#73796f;
-  --line:#e2e4d9;
-  --surface:#fffef9
+  --muted:#657368;
+  --background:#eff3ef;
+  --surface:#fdfefd;
+  --field:#f8f9f8;
+  --line:#dee4e0;
+  --soft:#e9eeea;
+  background:var(--background)
+}
+@supports(background:color-mix(in srgb,green 5%,white)) {
+  :root {
+    --background:color-mix(in srgb,var(--green) 5%,#f8faf7);
+    --surface:color-mix(in srgb,var(--green) 1%,white);
+    --field:color-mix(in srgb,var(--green) 4%,white);
+    --line:color-mix(in srgb,var(--green) 18%,white);
+    --soft:color-mix(in srgb,var(--green) 12%,white)
+  }
 }
 * {
   box-sizing:border-box
@@ -50,17 +64,16 @@ textarea {
 h1,h2,p {
   margin:0
 }
-h1,h2,.entry-title {
-  font-family:Georgia,"Times New Roman",serif;
-  font-weight:400
-}
 h1 {
+  font-family:var(--font-accent);
+  font-weight:400;
   font-size:36px;
   line-height:1.15;
   letter-spacing:-1.2px
 }
 h2 {
-  font-size:28px;
+  font-size:24px;
+  font-weight:600;
   line-height:1.2
 }
 .shell {
@@ -131,7 +144,7 @@ h2 {
   font-size:15px
 }
 .tools-menu button:hover {
-  background:#edf1e7
+  background:var(--soft)
 }
 .intro {
   display:flex;
@@ -163,7 +176,7 @@ h2 {
   background:#395b43
 }
 .secondary {
-  border:1px solid #ccd4c4;
+  border:1px solid var(--line);
   background:var(--surface)
 }
 .danger {
@@ -182,7 +195,7 @@ h2 {
   color:#994f43
 }
 .search-wrap {
-  background:#fffef9;
+  background:var(--surface);
   border:1px solid var(--line);
   border-radius:14px;
   display:flex;
@@ -231,7 +244,7 @@ h2 {
   border-radius:10px
 }
 .filters button[aria-pressed=true] {
-  background:#e5ebdf;
+  background:var(--soft);
   color:#3b5f45;
   font-weight:600
 }
@@ -260,7 +273,7 @@ h2 {
   box-shadow:0 10px 30px #28342b24;
   border-color:#839b75;
   z-index:2;
-  background:#f1f5e9;
+  background:var(--field);
   opacity:.9
 }
 .check {
@@ -288,9 +301,9 @@ h2 {
   padding-top:6px
 }
 .entry-title {
-  font-size:23px;
-  line-height:1.23;
-  letter-spacing:-.35px;
+  font-size:20px;
+  line-height:1.35;
+  letter-spacing:-.3px;
   overflow-wrap:anywhere
 }
 .entry.done .entry-title {
@@ -327,7 +340,7 @@ h2 {
 .notes {
   font-size:14px;
   line-height:1.65;
-  color:#73796f;
+  color:var(--muted);
   margin-top:6px;
   white-space:pre-wrap;
   overflow-wrap:anywhere
@@ -346,7 +359,7 @@ h2 {
   min-width:44px
 }
 .entry-actions button:hover {
-  background:#edf1e7;
+  background:var(--soft);
   color:var(--green)
 }
 .grip {
@@ -371,7 +384,7 @@ h2 {
   margin-bottom:14px
 }
 .empty h2 {
-  font-size:26px
+  font-size:24px
 }
 .empty p {
   font-size:14px;
@@ -389,7 +402,7 @@ h2 {
 footer {
   text-align:center;
   color:#989d90;
-  font-family:Georgia,serif;
+  font-family:var(--font-accent);
   font-style:italic;
   font-size:14px;
   margin:48px 0 10px
@@ -421,7 +434,7 @@ dialog::backdrop {
   margin-bottom:20px
 }
 .dialog-heading h2 {
-  font-size:27px
+  font-size:24px
 }
 dialog p {
   font-size:15px;
@@ -437,9 +450,9 @@ dialog label {
 dialog input,dialog textarea {
   display:block;
   width:100%;
-  border:1px solid #d7dece;
+  border:1px solid var(--line);
   border-radius:12px;
-  background:#fbfcf7;
+  background:var(--field);
   padding:12px;
   line-height:1.5
 }
@@ -527,7 +540,7 @@ dialog input,dialog textarea {
     grid-template-columns:44px minmax(0,1fr) 44px
   }
   .entry-title {
-    font-size:22px
+    font-size:19px
   }
   .mobile-break {
     display:block
@@ -542,7 +555,7 @@ dialog input,dialog textarea {
     padding:20px
   }
   .dialog-heading h2 {
-    font-size:25px
+    font-size:22px
   }
 }
 @media(min-width:650px) {
@@ -565,7 +578,7 @@ dialog input,dialog textarea {
     padding:20px 15px
   }
   .entry-title {
-    font-size:25px
+    font-size:21px
   }
   .entry-actions {
     margin-top:12px

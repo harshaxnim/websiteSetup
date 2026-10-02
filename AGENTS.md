@@ -4,6 +4,7 @@ Use the existing checkout. Cloud tasks are already isolated; create a Git worktr
 
 ## Mobile is a first-class product surface
 
+- Read and follow [DESIGN.md](DESIGN.md) when building or changing an app's UI. Use sans serif for everyday elements, reserve serif for a few deliberate accents, and give the page background a subtle tint of the app's theme color.
 - Design the core flow for a 360–390 px viewport first, then enhance it for tablets and desktop. Every primary action must work on a small screen without horizontal scrolling or a desktop-only control.
 - Use a deliberate visual hierarchy, restrained color palette, readable type, consistent spacing, and concise copy. Prefer useful content over decorative panels. Do not put implementation details into normal product flows.
 - Use at least 16 px text in form inputs, readable body text, and tap targets at least 44 × 44 px. Give icons accessible names; never communicate status using color alone.
