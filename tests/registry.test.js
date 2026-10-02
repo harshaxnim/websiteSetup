@@ -55,6 +55,8 @@ test('rules reject mismatched IDs, unsafe links, invalid statuses, extra fields,
   await assertFails(setDoc(doc(db('alice'), 'appDirectory/videos'), { ...record, url: 'javascript:alert(1)' }));
   await assertFails(setDoc(doc(db('alice'), 'appDirectory/videos'), { ...record, status: 'fake' }));
   await assertFails(setDoc(doc(db('alice'), 'appDirectory/videos'), { ...record, privateNotes: 'no private data' }));
+  await assertFails(setDoc(doc(db('alice'), 'appDirectory/videos'), { ...record, themeColor: 'red;position:fixed' }));
+  await assertFails(setDoc(doc(db('alice'), 'appDirectory/videos'), { ...record, iconUrl: 'javascript:alert(1)' }));
   await registry('alice').registerApp(info());
   await assertFails(updateDoc(doc(db('alice'), 'appDirectory/videos'), { appId: 'another-app', updatedAt: serverTimestamp() }));
   await assertFails(updateDoc(doc(db('alice'), 'appDirectory/videos'), { createdAt: serverTimestamp(), updatedAt: serverTimestamp() }));

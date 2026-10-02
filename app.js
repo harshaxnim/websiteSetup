@@ -1,6 +1,7 @@
 import { signIn, signOut, onUserChanged, getAppRegistry, appInfo } from './lib/platform.js';
 import { APP_STATUSES, resolveAppInfo, TEMPLATE_REPOSITORY } from './lib/app-info.js';
 import { discoverTemplateApps } from './lib/github-discovery.js';
+import { checkAppPage } from './lib/page-status.js';
 
 const $ = id => document.getElementById(id);
 const labels = { planning: 'Planned', development: 'In development', live: 'Live', paused: 'Paused', archived: 'Archived' };
@@ -11,6 +12,38 @@ let filter = 'all';
 let editing = false;
 let generation = 0;
 let registry;
+const pageChecks = new Map();
+let checkQueue = [];
+let runningChecks = 0;
+
+function updatePageBadges(url, result) {
+  for (const card of document.querySelectorAll('.app-card')) {
+    if (card.dataset.url !== url) continue;
+    const badge = card.querySelector('.status-badge');
+    const savedStatus = card.dataset.status;
+    const status = ['paused', 'archived'].includes(savedStatus) ? savedStatus : result.state === 'reachable' ? 'live' : savedStatus === 'live' ? (result.state === 'unavailable' ? 'unavailable' : 'unverified') : savedStatus;
+    badge.className = `status-badge status-${status}`;
+    badge.textContent = labels[status] || (status === 'unavailable' ? 'Unavailable' : 'Unverified');
+    const detail = card.querySelector('.page-result');
+    detail.textContent = result.state === 'reachable' ? 'Page is reachable' : result.state === 'unavailable' ? `Page returned HTTP ${result.status}` : 'Couldn’t verify page';
+    detail.title = result.reason || 'Checked from this browser';
+  }
+}
+function pumpPageChecks() {
+  $('check-pages').disabled = runningChecks > 0 || checkQueue.length > 0;
+  $('check-pages').textContent = $('check-pages').disabled ? 'Checking pages…' : 'Check pages ↻';
+  while (runningChecks < 4 && checkQueue.length) {
+    const url = checkQueue.shift(); runningChecks++;
+    checkAppPage(url).then(result => { pageChecks.set(url, result); updatePageBadges(url, result); }).finally(() => { runningChecks--; pumpPageChecks(); });
+  }
+}
+function schedulePageChecks() {
+  for (const app of apps) {
+    if (pageChecks.has(app.url) || app.status === 'archived') continue;
+    pageChecks.set(app.url, { state: 'checking' }); checkQueue.push(app.url);
+  }
+  pumpPageChecks();
+}
 
 function message(text = '') { $('notice').textContent = text; $('notice').hidden = !text; }
 function icon(name) {
@@ -36,11 +69,6 @@ function render() {
   const visible = apps.filter(app => (filter === 'all' || app.status === filter)
     && [app.name, app.description, app.repository].some(value => String(value || '').toLowerCase().includes(needle)))
     .sort((a, b) => String(a.name).localeCompare(String(b.name)));
-  for (const status of ['all', 'live', 'development', 'paused']) {
-    $(`count-${status}`).textContent = loaded ? String(status === 'all' ? apps.length : apps.filter(app => app.status === status).length) : '—';
-  }
-  $('nav-count').textContent = String(apps.length);
-  $('result-count').textContent = String(visible.length);
   $('app-list').replaceChildren();
   $('app-list').setAttribute('aria-busy', String(!loaded));
   if (!visible.length) {
@@ -52,10 +80,15 @@ function render() {
     $('app-list').append(node); return;
   }
   for (const app of visible) {
-    const card = document.createElement('article'); card.className = 'app-card';
+    const card = document.createElement('article'); card.className = 'app-card'; card.dataset.url = app.url; card.dataset.status = app.status;
+    const theme = /^#[A-Fa-f0-9]{6}$/.test(app.themeColor || '') ? app.themeColor : '#b97053';
+    card.style.setProperty('--app-theme', theme); card.style.setProperty('--app-tint', `${theme}12`);
     const top = document.createElement('div'); top.className = 'card-top';
     const mark = document.createElement('div'); mark.className = 'app-icon'; mark.setAttribute('aria-hidden', 'true'); mark.textContent = String(app.name || '?').slice(0, 1).toUpperCase();
-    const badge = document.createElement('span'); badge.className = `status-badge status-${APP_STATUSES.includes(app.status) ? app.status : 'planning'}`; badge.textContent = labels[app.status] || 'Planned'; top.append(mark, badge);
+    if (app.iconUrl && link('', app.iconUrl)) {
+      const image = document.createElement('img'); image.src = app.iconUrl; image.alt = ''; image.loading = 'lazy'; image.decoding = 'async'; image.referrerPolicy = 'no-referrer'; image.addEventListener('error', () => image.remove()); mark.append(image);
+    }
+    const badge = document.createElement('span'); badge.className = `status-badge status-${APP_STATUSES.includes(app.status) ? app.status : 'planning'}`; badge.textContent = app.status === 'live' ? 'Checking…' : labels[app.status] || 'Planned'; top.append(mark, badge);
     const title = document.createElement('h3'); title.textContent = app.name || 'Untitled app';
     const description = document.createElement('p'); description.className = 'app-description'; description.textContent = app.description || 'A new idea built on the shared platform.';
     const meta = document.createElement('div'); meta.className = 'card-meta'; meta.append(icon('code'));
@@ -63,24 +96,22 @@ function render() {
     const bottom = document.createElement('div'); bottom.className = 'card-bottom';
     const date = document.createElement('span'); date.className = 'card-date';
     const updated = app.updatedAt?.toDate?.(); date.textContent = updated ? `Updated ${updated.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}` : 'New to the ecosystem';
+    const pageResult = document.createElement('span'); pageResult.className = 'page-result'; pageResult.textContent = app.status === 'archived' ? 'Archived' : 'Checking page…';
     const actions = document.createElement('div'); actions.className = 'card-actions';
     if (user?.uid === app.ownerUid) {
       const edit = document.createElement('button'); edit.className = 'manage-button'; edit.type = 'button'; edit.textContent = 'Manage'; edit.setAttribute('aria-label', `Manage ${app.name}`); edit.addEventListener('click', () => openForm(app)); actions.append(edit);
     }
-    if (app.status === 'live') {
-      const visit = link('Open app', app.url, 'app-link'); if (visit) { visit.append(icon('arrow')); actions.append(visit); }
-    } else {
-      const source = link('View code', app.repositoryUrl, 'app-link'); if (source) { source.append(icon('arrow')); actions.append(source); }
-    }
-    bottom.append(date, actions); card.append(top, title, description, meta, bottom); $('app-list').append(card);
+    const visit = link('Open app', app.url, 'app-link'); if (visit) { visit.append(icon('arrow')); actions.append(visit); }
+    const info = document.createElement('div'); info.className = 'card-info'; info.append(pageResult, date); bottom.append(info, actions); card.append(top, title, description, meta, bottom); $('app-list').append(card);
+    const result = pageChecks.get(app.url); if (result && result.state !== 'checking') updatePageBadges(app.url, result);
   }
 }
 function openForm(app) {
   if (!user) return;
   editing = !!app; $('app-form').reset(); $('form-error').hidden = true;
   $('dialog-title').textContent = editing ? 'Manage app' : 'Add an app';
-  for (const [field, key] of [['repository', 'repository'], ['id', 'appId'], ['name', 'name'], ['description', 'description'], ['url', 'url'], ['status', 'status']]) {
-    $(`app-${field}`).value = app?.[key] || (field === 'status' ? 'development' : '');
+  for (const [field, key] of [['repository', 'repository'], ['id', 'appId'], ['name', 'name'], ['description', 'description'], ['url', 'url'], ['status', 'status'], ['icon', 'iconUrl'], ['theme', 'themeColor']]) {
+    $(`app-${field}`).value = app?.[key] || (field === 'status' ? 'development' : field === 'theme' ? '#b97053' : '');
   }
   $('app-repository').readOnly = editing; $('app-id').readOnly = editing;
   $('app-dialog').showModal();
@@ -92,7 +123,7 @@ $('app-repository').addEventListener('change', () => {
   if (editing) return;
   try {
     const info = resolveAppInfo({ repository: $('app-repository').value.trim() });
-    for (const [field, key] of [['id', 'appId'], ['name', 'name'], ['url', 'url']]) { if (!$(`app-${field}`).value) $(`app-${field}`).value = info[key]; }
+    for (const [field, key] of [['id', 'appId'], ['name', 'name'], ['url', 'url'], ['icon', 'iconUrl']]) { if (!$(`app-${field}`).value) $(`app-${field}`).value = info[key]; }
   } catch { /* Form submission reports invalid repository input. */ }
 });
 $('app-form').addEventListener('submit', async event => {
@@ -103,7 +134,7 @@ $('app-form').addEventListener('submit', async event => {
     const repository = $('app-repository').value.trim();
     await registry.saveApp({
       appId: $('app-id').value.trim(), name: $('app-name').value.trim(), repository,
-      description: $('app-description').value.trim(), status: $('app-status').value,
+      description: $('app-description').value.trim(), status: $('app-status').value, iconUrl: $('app-icon').value.trim(), themeColor: $('app-theme').value,
       url: $('app-url').value.trim(), repositoryUrl: `https://github.com/${repository}`, template: TEMPLATE_REPOSITORY,
     });
     if (generation === currentGeneration) { closeForm(); message(editing ? 'App details updated.' : 'Your app is part of the ecosystem.'); }
@@ -118,6 +149,10 @@ $('filters').addEventListener('click', event => {
   render();
 });
 $('search-apps').addEventListener('input', render);
+$('check-pages').addEventListener('click', () => {
+  if (runningChecks || checkQueue.length) return;
+  pageChecks.clear(); schedulePageChecks(); render();
+});
 $('auth-button').addEventListener('click', async () => {
   $('auth-button').disabled = true; message();
   try { if (user) await signOut(); else await signIn(); }
@@ -142,7 +177,7 @@ $('sync-github').addEventListener('click', async () => {
 
 try {
   registry = getAppRegistry();
-  registry.subscribeApps(records => { apps = records; loaded = true; render(); }, error => {
+  registry.subscribeApps(records => { apps = records; loaded = true; schedulePageChecks(); render(); }, error => {
     console.error('Directory read failed:', error.code || error.message);
     $('app-list').setAttribute('aria-busy', 'false');
     $('app-list').replaceChildren(empty('The directory is taking a moment.', 'We couldn’t load the latest apps. Please try again soon.'));

@@ -11,6 +11,7 @@ test('discovery recognizes template ancestry and markers, excludes unrelated rep
     if (url.endsWith('/research-tool/contents/template.json')) return response({ content: btoa(JSON.stringify({ template: 'harshaxnim/websiteSetup' })) });
     if (url.endsWith('/contents/template.json')) return response(null, 404);
     if (url.endsWith('/app-manifest.json')) return response({ template: 'harshaxnim/websiteSetup', repository: 'harshaxnim/videos', appId: 'videos', name: 'Video Library' });
+    if (url === 'https://harshaxnim.github.io/research-tool/') return { ok: false, status: 404 };
     return response({});
   } });
   assert.equal(discovered.length, 2);
@@ -27,10 +28,11 @@ test('discovery follows pagination and propagates permission/rate-limit errors w
   assert.equal(pages, 2);
   await assert.rejects(discoverTemplateApps({ fetcher: async () => response({}, 403) }), /GitHub discovery failed/);
 });
-test('enabled Pages without a valid template manifest remains in development', async () => {
+test('an unreadable app page is not called live even when Pages is enabled', async () => {
   const apps = await discoverTemplateApps({ fetcher: async url => {
     if (url.includes('/users/')) return response([{ name: 'videos', full_name: 'harshaxnim/videos', has_pages: true }]);
     if (url.endsWith('/app-manifest.json')) return response({ template: 'someone/else', repository: 'harshaxnim/videos' });
+    if (url === 'https://harshaxnim.github.io/videos/') return { ok: false, status: 404 };
     return response({ template_repository: { full_name: 'harshaxnim/websiteSetup' } });
   } });
   assert.equal(apps[0].status, 'development');

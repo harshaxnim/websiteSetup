@@ -8,6 +8,8 @@ test('repository metadata resolves zero-config app identity and links', () => {
   assert.equal(info.name, 'Research Tool');
   assert.equal(info.url, 'https://harshaxnim.github.io/research-tool/');
   assert.equal(info.repositoryUrl, 'https://github.com/harshaxnim/research-tool');
+  assert.equal(info.iconUrl, 'https://harshaxnim.github.io/research-tool/icon.svg');
+  assert.equal(info.themeColor, '#b97053');
   assert.equal(validateAppRecord(info), info);
 });
 test('explicit identity and presentation override defaults', () => {
@@ -23,4 +25,6 @@ test('directory records reject unsafe URLs, invalid status, and mismatched repos
   assert.throws(() => validateAppRecord({ ...info, repositoryUrl: 'https://github.com/other/repo' }));
   assert.throws(() => validateAppRecord({ ...info, template: 'other/template' }));
   assert.throws(() => validateAppRecord({ ...info, appId: '../escape' }));
+  assert.throws(() => validateAppRecord({ ...info, themeColor: 'red; display:none' }));
+  assert.throws(() => validateAppRecord({ ...info, iconUrl: 'javascript:alert(1)' }));
 });

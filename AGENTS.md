@@ -19,6 +19,8 @@ Use the existing checkout. Cloud tasks are already isolated; create a Git worktr
 - `appDirectory/{appId}` contains only public app metadata. Every record has `ownerUid`; only that authenticated owner can edit or delete it. Never add personal application data to this collection or let a client transfer ownership.
 - Keep `users/{userId}/apps/...` rules unchanged when working on directory features. Test Firestore rules for anonymous reads, unauthenticated writes, other-user writes, ownership changes, and nested private-data isolation.
 - Repository identity and app manifests are derived automatically. Keep `template.json`, the shared modules, and Pages workflow when making a new app. Customize `config/app-config.js` for presentation or an explicit APP_ID only when necessary.
+- Give each app its own icon and theme color, matching its actual interface. Set `APP_DETAILS.iconUrl` and `APP_DETAILS.themeColor`, and replace `public/icon.svg`; the manifest carries this branding into the directory's public metadata. Keep directory cards focused on app names and descriptions, without a promotional hero or counters.
+- Verify availability by requesting the actual app page from the browser. An enabled Pages setting or a manifest alone is not a live check. Report blocked CORS/network checks as unverified, and never treat an opaque response as success or overwrite owner lifecycle choices with temporary observations.
 
 ## Verify and deploy
 

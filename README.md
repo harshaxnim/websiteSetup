@@ -8,7 +8,7 @@ The shared platform is configured once by the template owner. Future apps normal
 
 ## Start a new app
 
-1. Select **Use this template → Create a new repository** (once the owner enables template status). Agents can also run `gh repo create OWNER/APP --template harshaxnim/websiteSetup --public --clone`.
+1. Select **Use this template → Create a new repository**. Agents can also run `gh repo create OWNER/APP --template harshaxnim/websiteSetup --public --clone`.
 2. Keep `config/firebase-config.js`, `lib/`, `firestore.rules`, and `.github/workflows/pages.yml`. Do not create a new Firebase project.
 3. Customize `index.html`, `app.js`, and `styles.css`. The root site is a public app directory. The notebook starter is in `examples/notebook/` and demonstrates private structured storage, realtime updates, and Google sign-in. Customize or replace the root UI for a new application; keep the shared platform modules.
 4. Ensure **Settings → Pages → Build and deployment → Source → GitHub Actions** is selected. Template files copy; repository settings do not. With a credential that has Pages and Administration write permission, inspect `gh api repos/OWNER/APP/pages` and create only if the response is 404: `gh api --method POST repos/OWNER/APP/pages -f build_type=workflow`. If it exists with a branch-based source, update it to workflow-based deployment. Do not add a PAT secret to each app.
@@ -64,6 +64,7 @@ appDirectory/{appId}
   ownerUid
   appId, repository, repositoryUrl, template
   name, description, url, status
+  iconUrl, themeColor
   createdAt, updatedAt
 ```
 
@@ -71,9 +72,11 @@ The creator's authenticated UID becomes `ownerUid`. Firestore rules allow public
 
 Apps that call the shared `onUserChanged` register on their first authenticated visit at a GitHub Pages URL. This creates a live record once and preserves later owner edits; normal visits do not overwrite metadata/status or transfer ownership. An authenticated user other than the existing owner can use the app but cannot edit its directory record. The template directory itself and local development do not automatically register as new apps. For custom domains, register through `getAppRegistry().registerApp(appInfo)` or add the app in the directory.
 
-**Sync from GitHub** searches the current repository owner's public repos for template ancestry or the inherited `template.json` marker. It adds missing records owned by the signed-in caller. Private repos require manual registration. Existing names and statuses are preserved. A deployed `app-manifest.json` verifies a newly discovered app is live; Pages being enabled alone does not. GitHub's unauthenticated API may apply rate limits; the UI reports errors and allows manual registration. Discovery is run explicitly; no background service watches GitHub.
+**Sync from GitHub** searches the current repository owner's public repos for template ancestry or the inherited `template.json` marker. It adds missing records owned by the signed-in caller. Private repos require manual registration. Existing names and statuses are preserved. A deployed `app-manifest.json` supplies app identity and branding; a successful GET of the actual app page marks a newly discovered app live. GitHub's unauthenticated API may apply rate limits; the UI reports errors and allows manual registration. Discovery is run explicitly; no background service watches GitHub.
 
-`config/app-config.js` optionally defines `APP_DETAILS` (`name`, `description`, initial `status`, custom `url`) alongside an APP_ID override. Repository identity is supplied automatically by GitHub Actions or the Git origin in local builds. The build emits `app-manifest.json`; keep `template.json` in generated apps so the directory can discover them.
+`config/app-config.js` optionally defines `APP_DETAILS` (`name`, `description`, initial `status`, custom `url`, `iconUrl`, and `themeColor`) alongside an APP_ID override. Set an HTTPS icon URL and a six-digit hex theme color that match the actual app. By default, the icon is `icon.svg` at the app URL; replace `public/icon.svg` with the app's own icon. Owners can also edit branding in the directory. Older records without branding get a letter icon and the default warm theme. Repository identity is supplied automatically by GitHub Actions or the Git origin in local builds. The build emits `app-manifest.json`; keep `template.json` in generated apps so the directory can discover them.
+
+Cards show each app and its description immediately, without a promotional hero or counters. On load, the browser checks actual app pages with GET requests (four at a time, with a ten-second timeout). **Check pages** repeats the checks. Successful responses show Live, failed HTTP responses replace a saved Live badge with Unavailable, and network/CORS failures show Unverified. Paused and archived statuses are retained. Checks are temporary browser observations and do not overwrite Firestore status; filters use the saved lifecycle status. Custom domains must allow cross-origin requests for the directory to verify them. An opaque `no-cors` response never counts as proof that an app is live.
 
 ```js
 import { getAppRegistry, appInfo } from './lib/platform.js';

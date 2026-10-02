@@ -8,4 +8,6 @@ export const APP_DETAILS = {
   description: '',
   status: 'development',
   url: undefined,
+  iconUrl: undefined,
+  themeColor: '#b97053',
 };

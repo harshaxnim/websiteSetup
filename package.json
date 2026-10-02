@@ -3,23 +3,27 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22.12.0" },
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "node --test tests/app-id.test.js tests/app-info.test.js tests/github-discovery.test.js",
+    "test": "node --test tests/app-id.test.js tests/app-info.test.js tests/github-discovery.test.js tests/page-status.test.js",
     "test:rules": "firebase emulators:exec --only firestore --project demo-personal-apps 'node --test --test-concurrency=1 tests/storage.test.js tests/registry.test.js'",
     "test:browser": "playwright test",
     "test:e2e": "firebase emulators:exec --only auth,firestore --project demo-personal-apps 'playwright test --config playwright.emulator.config.js'",
     "check:firebase": "node scripts/check-firebase-config.js",
     "deploy:rules": "npm run check:firebase && node scripts/deploy-rules.js"
   },
-  "dependencies": { "firebase": "12.19.0" },
+  "dependencies": {
+    "firebase": "12.19.0"
+  },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^5.0.0",
     "@playwright/test": "^1.55.0",
-    "firebase-tools": "^14.0.0",
+    "firebase-tools": "^15.32.1",
     "vite": "^7.0.0"
   }
 }
