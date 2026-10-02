@@ -21,6 +21,8 @@ test('mobile directory supports branded apps, client page checks, public reading
   await login(page, 'directory-owner@example.test');
   await page.getByRole('button', { name: 'Add app', exact: true }).click();
   await page.getByLabel('GitHub repository', { exact: true }).fill('harshaxnim/research-desk');
+  await page.getByLabel('GitHub repository', { exact: true }).press('Tab');
+  await expect(page.getByLabel('App ID', { exact: true })).toHaveValue('research-desk');
   await page.getByLabel('App ID', { exact: true }).fill('research-desk');
   await page.getByLabel('App name', { exact: true }).fill('Research Desk With A Particularly Long Name');
   await page.getByLabel('Description', { exact: true }).fill('Connect the dots across your reading.');
@@ -28,16 +30,37 @@ test('mobile directory supports branded apps, client page checks, public reading
   await page.getByLabel('Icon URL', { exact: true }).fill('https://harshaxnim.github.io/research-desk/icon.svg');
   await page.getByLabel('Theme color', { exact: true }).fill('#1e7c86');
   await page.getByLabel('Status', { exact: true }).selectOption('development');
+  await page.getByLabel('Icon URL', { exact: true }).fill('http://example.com/icon.svg');
+  await page.getByRole('button', { name: 'Save app', exact: true }).click();
+  await expect(page.locator('#form-error')).toContainText('HTTPS');
+  await expect(page.locator('#app-dialog')).toBeVisible();
+  await page.getByLabel('Icon URL', { exact: true }).fill('https://harshaxnim.github.io/research-desk/icon.svg');
   await page.getByRole('button', { name: 'Save app', exact: true }).click();
   await expect(page.locator('#app-dialog')).not.toBeVisible();
   await expect(page.locator('.app-card')).toContainText('Research Desk');
   await expect(page.locator('.app-card .status-badge')).toHaveText('In development');
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  // Ownership rules allow metadata through; display code must remain safe.
+  await page.evaluate(async () => {
+    const { updateEmulatedAppMetadata } = await import('/tests/emulator/sign-in-fixture.js');
+    await updateEmulatedAppMetadata('research-desk', { themeColor: 'red;position:fixed', iconUrl: 'javascript:alert(1)', updatedAt: { toDate: 'invalid' }, tags: ['research'], release: { version: '1.0' } });
+  });
+  await expect(page.locator('.app-card')).toHaveCSS('--app-theme', '#b97053');
+  await expect(page.locator('.app-card .app-icon img')).toHaveCount(0);
+  await expect(page.locator('.app-card .card-date')).toHaveText('New to the ecosystem');
   await page.getByRole('button', { name: /Manage Research Desk/ }).click();
   await expect(page.getByLabel('GitHub repository', { exact: true })).toHaveAttribute('readonly', '');
   await page.getByLabel('Status', { exact: true }).selectOption('live');
+  await page.getByLabel('Theme color', { exact: true }).fill('#1e7c86');
+  await page.getByLabel('Icon URL', { exact: true }).fill('https://harshaxnim.github.io/research-desk/icon.svg');
   await page.getByRole('button', { name: 'Save app', exact: true }).click();
   await expect(page.locator('.app-card .status-badge')).toHaveText('Unavailable');
+  const extraMetadata = await page.evaluate(async () => {
+    const { getAppRegistry } = await import('/lib/platform.js');
+    const record = (await getAppRegistry().listApps()).find(app => app.appId === 'research-desk');
+    return { tags: record.tags, release: record.release };
+  });
+  expect(extraMetadata).toEqual({ tags: ['research'], release: { version: '1.0' } });
   await expect(page.locator('.app-card .page-result')).toHaveText('Page returned HTTP 503');
   liveStatus = 200;
   await expect(page.getByRole('button', { name: 'Check pages' })).toBeEnabled();

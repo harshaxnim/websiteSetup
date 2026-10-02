@@ -52,6 +52,7 @@ function icon(name) {
   use.setAttribute('href', `#icon-${name}`); svg.setAttribute('aria-hidden', 'true'); svg.append(use); return svg;
 }
 function link(text, url, className = '') {
+  if (typeof url !== 'string') return null;
   const anchor = document.createElement('a'); anchor.textContent = text; anchor.className = className;
   try { const target = new URL(url); if (target.protocol !== 'https:' || target.username || target.password) return null; }
   catch { return null; }
@@ -80,22 +81,23 @@ function render() {
     $('app-list').append(node); return;
   }
   for (const app of visible) {
-    const card = document.createElement('article'); card.className = 'app-card'; card.dataset.url = app.url; card.dataset.status = app.status;
-    const theme = /^#[A-Fa-f0-9]{6}$/.test(app.themeColor || '') ? app.themeColor : '#b97053';
+    const status = APP_STATUSES.includes(app.status) ? app.status : 'planning';
+    const card = document.createElement('article'); card.className = 'app-card'; card.dataset.url = app.url; card.dataset.status = status;
+    const theme = typeof app.themeColor === 'string' && /^#[A-Fa-f0-9]{6}$/.test(app.themeColor) ? app.themeColor : '#b97053';
     card.style.setProperty('--app-theme', theme); card.style.setProperty('--app-tint', `${theme}12`);
     const top = document.createElement('div'); top.className = 'card-top';
     const mark = document.createElement('div'); mark.className = 'app-icon'; mark.setAttribute('aria-hidden', 'true'); mark.textContent = String(app.name || '?').slice(0, 1).toUpperCase();
     if (app.iconUrl && link('', app.iconUrl)) {
       const image = document.createElement('img'); image.src = app.iconUrl; image.alt = ''; image.loading = 'lazy'; image.decoding = 'async'; image.referrerPolicy = 'no-referrer'; image.addEventListener('error', () => image.remove()); mark.append(image);
     }
-    const badge = document.createElement('span'); badge.className = `status-badge status-${APP_STATUSES.includes(app.status) ? app.status : 'planning'}`; badge.textContent = app.status === 'live' ? 'Checking…' : labels[app.status] || 'Planned'; top.append(mark, badge);
+    const badge = document.createElement('span'); badge.className = `status-badge status-${status}`; badge.textContent = status === 'live' ? 'Checking…' : labels[status]; top.append(mark, badge);
     const title = document.createElement('h3'); title.textContent = app.name || 'Untitled app';
     const description = document.createElement('p'); description.className = 'app-description'; description.textContent = app.description || 'A new idea built on the shared platform.';
     const meta = document.createElement('div'); meta.className = 'card-meta'; meta.append(icon('code'));
     const repo = link(app.repository, app.repositoryUrl); if (repo) meta.append(repo);
     const bottom = document.createElement('div'); bottom.className = 'card-bottom';
     const date = document.createElement('span'); date.className = 'card-date';
-    const updated = app.updatedAt?.toDate?.(); date.textContent = updated ? `Updated ${updated.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}` : 'New to the ecosystem';
+    const updated = typeof app.updatedAt?.toDate === 'function' ? app.updatedAt.toDate() : null; date.textContent = updated ? `Updated ${updated.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}` : 'New to the ecosystem';
     const pageResult = document.createElement('span'); pageResult.className = 'page-result'; pageResult.textContent = app.status === 'archived' ? 'Archived' : 'Checking page…';
     const actions = document.createElement('div'); actions.className = 'card-actions';
     if (user?.uid === app.ownerUid) {
@@ -139,7 +141,7 @@ $('app-form').addEventListener('submit', async event => {
     });
     if (generation === currentGeneration) { closeForm(); message(editing ? 'App details updated.' : 'Your app is part of the ecosystem.'); }
   } catch (error) {
-    if (generation === currentGeneration) { $('form-error').textContent = error.code === 'permission-denied' ? 'This record belongs to another user, or the directory rules haven’t been published yet.' : error.message; $('form-error').hidden = false; }
+    if (generation === currentGeneration) { $('form-error').textContent = error.code === 'permission-denied' ? 'You don’t have permission to update this app.' : error.message; $('form-error').hidden = false; }
   } finally { $('save-app').disabled = false; }
 });
 $('filters').addEventListener('click', event => {

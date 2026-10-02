@@ -1,34 +1,15 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function validApp(data) {
-      return data.keys().hasOnly(['appId', 'repository', 'name', 'description', 'status', 'url', 'repositoryUrl', 'template', 'ownerUid', 'createdAt', 'updatedAt', 'iconUrl', 'themeColor'])
-        && data.keys().hasAll(['appId', 'repository', 'name', 'description', 'status', 'url', 'repositoryUrl', 'template', 'ownerUid', 'createdAt', 'updatedAt'])
-        && data.appId is string && data.appId.matches('[A-Za-z0-9][A-Za-z0-9._-]{0,127}')
-        && data.repository is string && data.repository.matches('[A-Za-z0-9][A-Za-z0-9-]{0,38}/[A-Za-z0-9_.-]{1,100}')
-        && data.name is string && data.name.size() > 0 && data.name.size() <= 120
-        && data.description is string && data.description.size() <= 1000
-        && data.status in ['planning', 'development', 'live', 'paused', 'archived']
-        && data.url is string && data.url.size() <= 2048 && data.url.matches('https://[^/@]+[^@]*')
-        && data.repositoryUrl == 'https://github.com/' + data.repository
-        && data.template in ['harshaxnim/OneAppToRuleThemAll', 'harshaxnim/websiteSetup']
-        && (!data.keys().hasAny(['themeColor']) || (data.themeColor is string && data.themeColor.matches('#[A-Fa-f0-9]{6}')))
-        && (!data.keys().hasAny(['iconUrl']) || (data.iconUrl is string && data.iconUrl.size() <= 2048 && (data.iconUrl == '' || data.iconUrl.matches('https://[^/@]+[^@]*'))))
-        && data.createdAt is timestamp && data.updatedAt == request.time;
-    }
     match /appDirectory/{appId} {
-      // Only public directory metadata lives here. User app data stays below users/.
+      // Authorize ownership here; validate public metadata in application code.
       allow read: if true;
-      allow create: if request.auth != null && validApp(request.resource.data)
+      allow create: if request.auth != null
         && request.resource.data.ownerUid == request.auth.uid
-        && request.resource.data.createdAt == request.time
         && appId == request.resource.data.appId;
       allow update: if request.auth != null && request.auth.uid == resource.data.ownerUid
-        && validApp(request.resource.data)
-        && request.resource.data.createdAt == resource.data.createdAt
         && request.resource.data.ownerUid == resource.data.ownerUid
-        && request.resource.data.appId == resource.data.appId
-        && request.resource.data.repository == resource.data.repository;
+        && request.resource.data.appId == resource.data.appId;
       allow delete: if request.auth != null && request.auth.uid == resource.data.ownerUid;
     }
     match /users/{userId}/apps/{appId} {

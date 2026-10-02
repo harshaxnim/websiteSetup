@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import { execFileSync } from 'node:child_process';
-import { resolveAppInfo } from './lib/app-info.js';
+import { resolveAppInfo, validateAppRecord } from './lib/app-info.js';
 import { APP_ID, APP_DETAILS } from './config/app-config.js';
 
 // Relative assets work at both / and GitHub Pages repository subpaths.
@@ -14,6 +14,7 @@ function repositoryIdentity() {
 const repository = repositoryIdentity();
 const [owner, repo] = repository.split('/');
 const manifest = resolveAppInfo({ repository, override: APP_ID, details: APP_DETAILS, hostname: `${owner}.github.io`, pathname: `/${repo}/` });
+validateAppRecord(manifest);
 export default defineConfig({
   base: './',
   define: { __APP_REPOSITORY__: JSON.stringify(repository) },

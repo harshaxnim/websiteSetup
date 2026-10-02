@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { before, after, beforeEach, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { initializeTestEnvironment, assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
-import { doc, getDoc, getDocs, collection, setDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, getDocs, collection, setDoc, updateDoc, deleteDoc, deleteField, serverTimestamp } from 'firebase/firestore';
 import { createAppRegistry } from '../lib/registry.js';
 import { resolveAppInfo } from '../lib/app-info.js';
 
@@ -29,10 +29,13 @@ test('directory is publicly readable and records have the authenticated creator 
 test('registration is idempotent and preserves owner-edited name and status', async () => {
   const r = registry('alice');
   assert.equal((await r.registerApp(info())).created, true);
-  await r.saveApp({ ...info(), name: 'My videos', status: 'paused' });
+  await updateDoc(doc(db('alice'), 'appDirectory/videos'), { tags: ['video'], release: { version: '1.0' } });
+  await r.saveApp({ ...info(), name: 'My videos', status: 'paused', iconUrl: 'https://example.com/video.svg', themeColor: '#123456' });
   assert.equal((await r.registerApp({ ...info(), status: 'live' })).created, false);
   const row = (await r.listApps())[0];
   assert.equal(row.status, 'paused'); assert.equal(row.name, 'My videos');
+  assert.equal(row.iconUrl, 'https://example.com/video.svg'); assert.equal(row.themeColor, '#123456');
+  assert.deepEqual(row.tags, ['video']); assert.deepEqual(row.release, { version: '1.0' });
   assert.equal((await registry('bob').registerApp(info())).created, false);
   assert.equal((await registry(null).listApps())[0].ownerUid, 'alice');
 });
@@ -49,21 +52,26 @@ test('rules prevent ownership transfer and reject anonymous and forged-owner cre
   await registry('alice').registerApp(info());
   await assertFails(updateDoc(doc(db('alice'), 'appDirectory/videos'), { ownerUid: 'bob', updatedAt: serverTimestamp() }));
   await assertFails(updateDoc(doc(db('bob'), 'appDirectory/videos'), { ownerUid: 'bob', updatedAt: serverTimestamp() }));
+  await assertFails(updateDoc(doc(db('alice'), 'appDirectory/videos'), { ownerUid: deleteField() }));
+  await assertFails(updateDoc(doc(db('alice'), 'appDirectory/videos'), { appId: deleteField() }));
   const record = { ...info(), ownerUid: 'alice', createdAt: serverTimestamp(), updatedAt: serverTimestamp() };
   await assertFails(setDoc(doc(db(null), 'appDirectory/new-app'), { ...record, appId: 'new-app' }));
   await assertFails(setDoc(doc(db('bob'), 'appDirectory/new-app'), { ...record, appId: 'new-app' }));
 });
-test('rules reject mismatched IDs, unsafe links, invalid statuses, extra fields, and immutable metadata changes', async () => {
+test('rules protect document identity and allow evolving metadata for owners', async () => {
   const record = { ...info(), ownerUid: 'alice', createdAt: serverTimestamp(), updatedAt: serverTimestamp() };
   await assertFails(setDoc(doc(db('alice'), 'appDirectory/wrong-id'), record));
-  await assertFails(setDoc(doc(db('alice'), 'appDirectory/videos'), { ...record, url: 'javascript:alert(1)' }));
-  await assertFails(setDoc(doc(db('alice'), 'appDirectory/videos'), { ...record, status: 'fake' }));
-  await assertFails(setDoc(doc(db('alice'), 'appDirectory/videos'), { ...record, privateNotes: 'no private data' }));
-  await assertFails(setDoc(doc(db('alice'), 'appDirectory/videos'), { ...record, themeColor: 'red;position:fixed' }));
-  await assertFails(setDoc(doc(db('alice'), 'appDirectory/videos'), { ...record, iconUrl: 'javascript:alert(1)' }));
+  await assertSucceeds(setDoc(doc(db('alice'), 'appDirectory/future-app'), { appId: 'future-app', ownerUid: 'alice', tags: ['future'], release: { version: '2.0' } }));
   await registry('alice').registerApp(info());
   await assertFails(updateDoc(doc(db('alice'), 'appDirectory/videos'), { appId: 'another-app', updatedAt: serverTimestamp() }));
-  await assertFails(updateDoc(doc(db('alice'), 'appDirectory/videos'), { createdAt: serverTimestamp(), updatedAt: serverTimestamp() }));
+  // Metadata constraints belong to the application, even for direct SDK writes.
+  await assertSucceeds(updateDoc(doc(db('alice'), 'appDirectory/videos'), { status: 'future-status', themeColor: 'invalid', iconUrl: 'javascript:alert(1)' }));
+  for (const change of [{ url: 'javascript:alert(1)' }, { status: 'fake' }, { themeColor: 'red;position:fixed' }, { iconUrl: 'javascript:alert(1)' }, { tags: [42] }]) {
+    await assert.rejects(registry('alice').saveApp({ ...info(), ...change }));
+    await assert.rejects(registry('alice').registerApp({ ...resolveAppInfo({ repository: 'harshaxnim/new-app' }), ...change }));
+  }
+  const saved = (await registry(null).listApps()).find(app => app.appId === 'videos');
+  assert.equal(saved.status, 'future-status'); // Rejected app writes did not alter it.
 });
 test('APP_ID conflicts with a different repo require an explicit override', async () => {
   await registry('alice').registerApp(info());

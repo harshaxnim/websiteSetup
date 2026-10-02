@@ -10,4 +10,5 @@ export const APP_DETAILS = {
   url: undefined,
   iconUrl: undefined,
   themeColor: '#b97053',
+  tags: undefined, // Optional array of public discovery tags.
 };
