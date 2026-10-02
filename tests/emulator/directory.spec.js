@@ -49,7 +49,8 @@ test('mobile directory supports branded apps, client page checks, public reading
   await expect(page.locator('.app-card .app-icon img')).toHaveCount(0);
   await expect(page.locator('.app-card .card-date')).toHaveText('New to the ecosystem');
   await page.getByRole('button', { name: /Manage Research Desk/ }).click();
-  await expect(page.getByLabel('GitHub repository', { exact: true })).toHaveAttribute('readonly', '');
+  await expect(page.getByLabel('GitHub repository', { exact: true })).not.toHaveAttribute('readonly', '');
+  await expect(page.getByLabel('App ID', { exact: true })).toHaveAttribute('readonly', '');
   await page.getByLabel('Status', { exact: true }).selectOption('live');
   await page.getByLabel('Theme color', { exact: true }).fill('#1e7c86');
   await page.getByLabel('Icon URL', { exact: true }).fill('https://harshaxnim.github.io/research-desk/icon.svg');

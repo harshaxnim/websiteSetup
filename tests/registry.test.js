@@ -62,6 +62,12 @@ test('rules protect document identity and allow evolving metadata for owners', a
   const record = { ...info(), ownerUid: 'alice', createdAt: serverTimestamp(), updatedAt: serverTimestamp() };
   await assertFails(setDoc(doc(db('alice'), 'appDirectory/wrong-id'), record));
   await assertSucceeds(setDoc(doc(db('alice'), 'appDirectory/future-app'), { appId: 'future-app', ownerUid: 'alice', tags: ['future'], release: { version: '2.0' } }));
+  await assertSucceeds(registry('alice').saveApp(resolveAppInfo({ repository: 'harshaxnim/future-app' })));
+  const migrated = (await registry(null).listApps()).find(app => app.appId === 'future-app');
+  assert.ok(migrated.createdAt.toDate() instanceof Date);
+  assert.deepEqual(migrated.tags, ['future']);
+  await assertSucceeds(registry('alice').saveApp(resolveAppInfo({ repository: 'harshaxnim/renamed-future-app', override: 'future-app' })));
+  assert.equal((await registry(null).listApps()).find(app => app.appId === 'future-app').repository, 'harshaxnim/renamed-future-app');
   await registry('alice').registerApp(info());
   await assertFails(updateDoc(doc(db('alice'), 'appDirectory/videos'), { appId: 'another-app', updatedAt: serverTimestamp() }));
   // Metadata constraints belong to the application, even for direct SDK writes.

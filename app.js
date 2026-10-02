@@ -115,7 +115,7 @@ function openForm(app) {
   for (const [field, key] of [['repository', 'repository'], ['id', 'appId'], ['name', 'name'], ['description', 'description'], ['url', 'url'], ['status', 'status'], ['icon', 'iconUrl'], ['theme', 'themeColor']]) {
     $(`app-${field}`).value = app?.[key] || (field === 'status' ? 'development' : field === 'theme' ? '#b97053' : '');
   }
-  $('app-repository').readOnly = editing; $('app-id').readOnly = editing;
+  $('app-repository').readOnly = false; $('app-id').readOnly = editing;
   $('app-dialog').showModal();
 }
 function closeForm() { $('app-dialog').close(); }
